@@ -140,9 +140,7 @@ function New-DSAPrivateKey
     with `System.Security.Cryptography.RSAParameters`
     .PARAMETER Data
     with binary data formated DER.
-    Normally, the `Data` value assumes PKCS8 format; for PKCS1 format, specify the `Pkcs1` parameter.
-    .PARAMETER Pkcs1
-    The `Data` parameter must be specified if it is in PKCS1 format. (If converted to PEM format, it will be labeled `RSA PRIVATE KEY`.)
+    the `Data` value must be PKCS8 format. (Not supported PKCS1 format)
     #>
     [CmdletBinding()]
     [OutputType([System.Security.Cryptography.DSA])]
@@ -155,9 +153,6 @@ function New-DSAPrivateKey
         ,
         [Parameter(ParameterSetName = "Binary", Mandatory, Position = 0)]
         [byte[]] $Data
-        ,
-        [Parameter(ParameterSetName = "Binary")]
-        [switch] $Pkcs1
     )
     [DSA] $key = $null;
     switch ($PSCmdlet.ParameterSetName)
@@ -171,14 +166,7 @@ function New-DSAPrivateKey
         "Binary" {
             [int] $bytesRead = $null;
             $key = [DSA]::Create();
-            if ($Pkcs1)
-            {
-                $key.ImportDSAPrivateKey($Data, [ref] $bytesRead)
-            }
-            else
-            {
-                $key.ImportPkcs8PrivateKey($Data, [ref] $bytesRead);
-            }
+            $key.ImportPkcs8PrivateKey($Data, [ref] $bytesRead);
         }
     }
     Write-Output $key
