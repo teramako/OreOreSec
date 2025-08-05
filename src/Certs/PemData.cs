@@ -25,15 +25,13 @@ public class PemData(string label, string base64data)
         return Convert.FromBase64String(Base64Data);
     }
 
+    /// <exception cref="ArgumentException">No PEM encoded data found.</exception>
     public static PemData[] Parse(string pemData)
     {
         var results = new List<PemData>();
-        while (pemData.Length > 0)
+        while (!string.IsNullOrWhiteSpace(pemData))
         {
-            if (!PemEncoding.TryFind(pemData, out var fields))
-            {
-                break;
-            }
+            var fields = PemEncoding.Find(pemData);
             var start = fields.Location.Start.Value;
             results.Add(new(pemData[fields.Location],
                             new Range(fields.Label.Start.Value - start, fields.Label.End.Value - start),
