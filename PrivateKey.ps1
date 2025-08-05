@@ -145,7 +145,7 @@ function New-DSAPrivateKey
     The `Data` parameter must be specified if it is in PKCS1 format. (If converted to PEM format, it will be labeled `RSA PRIVATE KEY`.)
     #>
     [CmdletBinding()]
-    [OutputType([System.Security.Cryptography.RSA])]
+    [OutputType([System.Security.Cryptography.DSA])]
     param(
         [Parameter(ParameterSetName = "New", Mandatory, Position = 0)]
         [int] $Bit
