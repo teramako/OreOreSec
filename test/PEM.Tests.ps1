@@ -9,6 +9,12 @@ BeforeAll {
         $pemData.Base64Data | Should -BeLike $ExpectBase64Data
         $pemData.ToString() | Should -Be ([System.IO.File]::ReadAllText($File).TrimEnd())
     }
+
+    $unknownPEM = @(
+        '-----BEGIN UNKNOWN-----',
+        '44GG44KT44GT',
+        '-----END UNKNOWN-----'
+    )
 }
 
 Describe 'PEM' {
@@ -41,6 +47,24 @@ Describe 'PEM' {
             Test-PrivateKey -File (Join-Path -Path $PrivateKeysDir -ChildPath 'dsa.pkcs8.pem') `
                             -ExpectLabel 'PRIVATE KEY' `
                             -ExpectBase64Data 'MIIBWgIBADCCATMGBy*tLl4LuWn2jL+ukEDhSc='
+        }
+
+        It 'Read from pipeile input (one string)' {
+            $pemData = ($unknownPEM -join "`n") | Read-PEM
+            $pemData.Label | Should -Be 'UNKNOWN'
+            $pemData.Base64Data | Should -Be '44GG44KT44GT'
+        }
+
+        It 'Read from pipeile input (multiline string)' {
+            $pemData = $unknownPEM | Read-PEM
+            $pemData.Label | Should -Be 'UNKNOWN'
+            $pemData.Base64Data | Should -Be '44GG44KT44GT'
+        }
+
+        It 'Should throw when invalid PEM format (unmatch label)' {
+            Assert-Throw {
+                (@('-----BEGIN MATCHED-----', '44GG44KT44GT', '------END UNMATCHED-----') -join "`n") | Read-PEM
+            }
         }
     }
 }
