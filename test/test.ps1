@@ -15,7 +15,7 @@ Import-Module (Join-Path -Path $ParnetDir -ChildPath OreOreSec.psd1)
 Import-Module -Name Pester
 
 $conf = New-PesterConfiguration
-if ($FullNames.Count -gt 0)
+if ($FullName.Count -gt 0)
 {
     $conf.Filter.FullName = $FullName
 }
