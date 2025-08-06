@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/PowerShell/PowerShell/master/src/Schemas/Format.xsd">
+  <ViewDefinitions>
+    <View>
+      <Name>Asn1Data</Name>
+      <ViewSelectedBy>
+        <TypeName>MT.Asn1.Asn1Data</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Width>40</Width>
+          </TableColumnHeader>
+          <TableColumnHeader />
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <Wrap />
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>Tag</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Data</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+  </ViewDefinitions>
+</Configuration>

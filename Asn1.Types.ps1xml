@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<Types xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/PowerShell/PowerShell/master/src/Schemas/Types.xsd">
+  <Type>
+    <Name>MT.Asn1.Asn1Data</Name>
+    <Members>
+      <MemberSet>
+        <Name>PSStandardMembers</Name>
+        <Members>
+          <PropertySet>
+            <Name>DefaultDisplayPropertySet</Name>
+            <ReferencedProperties>
+              <Name>Tag</Name>
+              <Name>Data</Name>
+            </ReferencedProperties>
+          </PropertySet>
+        </Members>
+      </MemberSet>
+    </Members>
+  </Type>
+</Types>
