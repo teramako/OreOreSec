@@ -88,3 +88,128 @@ function Read-Asn1
         }
     }
 }
+
+function Write-Asn1Tree
+{
+    <#
+    .SYNOPSIS
+    Print out ASN.1 data recursively
+    #>
+    param(
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [MT.Asn1.Asn1Data] $Data
+        ,
+        [Parameter()]
+        [switch] $NoIndent
+        ,
+        [Parameter(DontShow)]
+        [int] $Depth = 0
+    )
+    begin
+    {
+        $indent = if ($NoIndent) { "" } else { "  " * $Depth }
+    }
+    process
+    {
+        $result = [PSCustomObject]@{
+            Name = "{0}{1}" -f $indent, $Data.Tag
+            Value = $Data.Data;
+        }
+        Write-Output $result
+        if ($Data.Tag.IsConstructed)
+        {
+            $childDepth = $Depth + 1
+            foreach ($child in ([MT.Asn1.ConstructedData]$Data).Children)
+            {
+                Write-Asn1Tree -Data $child -NoIndent:$NoIndent -Depth $childDepth
+            }
+        }
+    }
+}
+
+function Show-Asn1Tree
+{
+    <#
+    .SYNOPSIS
+    ASN.1 データの階層構造を出力
+    .PARAMETER RuleSet
+    `DER', `CER' 等のデータタイプ
+    .PARAMETER NoIndent
+    階層構造のインデントを出力しない
+    .PARAMETER Asn1
+    ASN.1 オブジェクト
+    .PARAMETER PEM
+    PEM オブジェクト
+    .PARAMETER Base64
+    Base64エンコードされた文字列
+    .PARAMETER Data
+    バイナリデータ
+    #>
+    param(
+        [Parameter()]
+        [switch] $NoIndent
+        ,
+        [Parameter()]
+        [System.Formats.Asn1.AsnEncodingRules] $RuleSet = 'DER'
+        ,
+        [Parameter(ParameterSetName = "ASN1", Mandatory, ValueFromPipeline)]
+        [MT.Asn1.Asn1Data] $Asn1
+        ,
+        [Parameter(ParameterSetName = "PEM", Mandatory, ValueFromPipeline)]
+        [MT.Sec.PemData] $PEM
+        ,
+        [Parameter(ParameterSetName = "Base64", Mandatory, ValueFromPipeLine)]
+        [string] $Base64
+        ,
+        [Parameter(ParameterSetName = "Binary", Mandatory, ValueFromPipeLine)]
+        [byte[]] $Data
+    )
+    $pipelineInput = $input
+    $asnData = if ($pipelineInput.Count -gt 0)
+    {
+        switch ($PSCmdlet.ParameterSetName)
+        {
+            "PEM" {
+                Write-Verbose "Read PEM from pipeline"
+                ConvertTo-Asn1 -PEMs $pipelineInput
+            }
+            "Base64" {
+                Write-Verbose "Read Base64 from pipeline"
+                $pipelineInput | ForEach-Object { ConvertTo-Asn1 -Data ([Convert]::FromBase64String($_)) }
+            }
+            "Binary" {
+                Write-Verbose "Read binary from pipeline"
+                ConvertTo-Asn1 -Data ([byte[]]$pipelineInput)
+            }
+            "ASN1" {
+                Write-Verbose "Read ASN1 from pipeline"
+                $pipelineInput
+            }
+        }
+    }
+    else
+    {
+        switch ($PSCmdlet.ParameterSetName)
+        {
+            "PEM" {
+                Write-Verbose "Read PEM"
+                ConvertTo-Asn1 -Data $PEM.GetRawData()
+            }
+            "Base64" {
+                Write-Verbose "Read Base64"
+                ConvertTo-Asn1 -Data ([Convert]::FromBase64String($Base64))
+            }
+            "Binary" {
+                Write-Verbose "Read Binary"
+                ConvertTo-Asn1 -Data $Data
+            }
+            "ASN1" {
+                Write-Verbose "Read ASN1"
+                $Asn1
+            }
+        }
+    }
+    $asnData | 
+        Write-Asn1Tree -NoIndent:$NoIndent |
+            Format-Table -HideTableHeaders -Wrap
+}

@@ -75,7 +75,8 @@ FunctionsToExport = @(
     'New-DSAPrivateKey',
     'Read-PEM',
     'Read-Asn1',
-    'ConvertTo-Asn1'
+    'ConvertTo-Asn1',
+    'Show-Asn1Tree'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
