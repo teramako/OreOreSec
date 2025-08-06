@@ -1,5 +1,5 @@
 PWSH := pwsh -NoProfile
-DLL := libs/net8.0/Certs.dll
+DLL := libs/net8.0/MT.dll
 CSharpFiles = $(shell find src \( -name ".git" -o -name "obj" -o -name "bin" \) -prune -o -name "*.cs" -print)
 
 .ONESHELL:

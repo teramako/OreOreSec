@@ -19,7 +19,7 @@ function Read-PEM
 
     #>
     [CmdletBinding()]
-    [OutputType([Certs.PemData])]
+    [OutputType([MT.Sec.PemData])]
     param(
         [Parameter(ParameterSetName = "File", Mandatory, Position = 0)]
         [string] $Path
@@ -50,5 +50,5 @@ function Read-PEM
         Write-Warning "Input data is empty"
         return;
     }
-    Write-Output ([Certs.PemData]::Parse($data))
+    Write-Output ([MT.Sec.PemData]::Parse($data))
 }

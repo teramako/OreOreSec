@@ -66,7 +66,7 @@ PowerShellVersion = '7.5.0'
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = 'libs/net8.0/Certs.dll'
+NestedModules = 'libs/net8.0/MT.dll'
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(

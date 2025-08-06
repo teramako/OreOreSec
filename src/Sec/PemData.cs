@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Certs;
+namespace MT.Sec;
 
 public class PemData(string label, string base64data)
 {
@@ -25,6 +25,9 @@ public class PemData(string label, string base64data)
         return Convert.FromBase64String(Base64Data);
     }
 
+    /// <summary>
+    /// Parse PEM data and returns <see cref="PemData"/>s
+    /// </summary>
     /// <exception cref="ArgumentException">No PEM encoded data found.</exception>
     public static PemData[] Parse(string pemData)
     {
