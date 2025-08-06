@@ -1,16 +1,6 @@
 BeforeAll {
-    $PrivateKeysDir = Join-Path -Path $PSScriptRoot -ChildPath PrivateKey
-
-    function Test-PrivateKey([string] $File, [string] $ExpectLabel, [string] $ExpectBase64Data)
-    {
-        $pemData = Read-PEM -Path $File
-        Assert-Equal -Expected 1 -Actual $pemData.Count
-        $pemData.Label | Should -BeLike $ExpectLabel
-        $pemData.Base64Data | Should -BeLike $ExpectBase64Data
-        $pemData.ToString() | Should -Be ([System.IO.File]::ReadAllText($File).TrimEnd())
-    }
-
-    $unknownPEM = @(
+    $script:PrivateKeysDir = Join-Path -Path $PSScriptRoot -ChildPath PrivateKey
+    $script:unknownPEM = @(
         '-----BEGIN UNKNOWN-----',
         '44GG44KT44GT',
         '-----END UNKNOWN-----'
@@ -19,34 +9,19 @@ BeforeAll {
 
 Describe 'PEM' {
     Context 'Read-PEM' {
-        It 'Read from RSA PRIVATE KEY file (pkcs1)' {
-            Test-PrivateKey -File (Join-Path -Path $PrivateKeysDir -ChildPath 'rsa.pkcs1.pem') `
-                            -ExpectLabel 'RSA PRIVATE KEY' `
-                            -ExpectBase64Data 'MIIBOwIBAAJBAJsO*xWgS4vYpU1X34w=='
-        }
-
-        It 'Read from RSA PRIVATE KEY file (pkcs8)' {
-            Test-PrivateKey -File (Join-Path -Path $PrivateKeysDir -ChildPath 'rsa.pkcs8.pem') `
-                            -ExpectLabel 'PRIVATE KEY' `
-                            -ExpectBase64Data 'MIIBVQIBADANBgkqhkiG*aBLi9ilTVffj'
-        }
-
-        It 'Read from ECDsa PRIVATE KEY file (pkcs1)' {
-            Test-PrivateKey -File (Join-Path -Path $PrivateKeysDir -ChildPath 'ecdsa.pkcs1.pem') `
-                            -ExpectLabel 'EC PRIVATE KEY' `
-                            -ExpectBase64Data 'MHcCAQEEIEACsXkn7*/s0e5kyWlg5FQ=='
-        }
-
-        It 'Read from ECDsa PRIVATE KEY file (pkcs8)' {
-            Test-PrivateKey -File (Join-Path -Path $PrivateKeysDir -ChildPath 'ecdsa.pkcs8.pem') `
-                            -ExpectLabel 'PRIVATE KEY' `
-                            -ExpectBase64Data 'MIGHAgEAMBMGByqGSM*qveXwD+zR7mTJaWDkV'
-        }
-
-        It 'Read from DSA PRIVATE KEY file (pkcs8)' {
-            Test-PrivateKey -File (Join-Path -Path $PrivateKeysDir -ChildPath 'dsa.pkcs8.pem') `
-                            -ExpectLabel 'PRIVATE KEY' `
-                            -ExpectBase64Data 'MIIBWgIBADCCATMGBy*tLl4LuWn2jL+ukEDhSc='
+        It 'Read from <algorithm> PRIVATE KEY file (<pkcs>)' -ForEach @(
+            @{ algorithm = 'RSA';   pkcs = 'pkcs1'; file = 'rsa.pkcs1.pem';   expectedLabel = 'RSA PRIVATE KEY'; expectedData = 'MIIBOwIBAAJBAJsO*xWgS4vYpU1X34w==' },
+            @{ algorithm = 'RSA';   pkcs = 'pkcs8'; file = 'rsa.pkcs8.pem';   expectedLabel = 'PRIVATE KEY';     expectedData = 'MIIBVQIBADANBgkqhkiG*aBLi9ilTVffj' },
+            @{ algorithm = 'ECDsa'; pkcs = 'pkcs1'; file = 'ecdsa.pkcs1.pem'; expectedLabel = 'EC PRIVATE KEY';  expectedData = 'MHcCAQEEIEACsXkn7*/s0e5kyWlg5FQ==' },
+            @{ algorithm = 'ECDsa'; pkcs = 'pkcs8'; file = 'ecdsa.pkcs8.pem'; expectedLabel = 'PRIVATE KEY';     expectedData = 'MIGHAgEAMBMGByqGSM*qveXwD+zR7mTJaWDkV' },
+            @{ algorithm = 'DSA';   pkcs = 'pkcs8'; file = 'dsa.pkcs8.pem';   expectedLabel = 'PRIVATE KEY';     expectedData = 'MIIBWgIBADCCATMGBy*tLl4LuWn2jL+ukEDhSc=' }
+        ) {
+            $pemFile = Join-Path -Path $PrivateKeysDir -ChildPath $file
+            $pemData = Read-PEM -Path $pemFile
+            Assert-Equal -Expected 1 -Actual $pemData.Count
+            $pemData.Label | Should -BeLike $expectedLabel
+            $pemData.Base64Data | Should -BeLike $expectedData
+            $pemData.ToString() | Should -Be ([System.IO.File]::ReadAllText($pemFile).TrimEnd())
         }
 
         It 'Read from pipeile input (one string)' {

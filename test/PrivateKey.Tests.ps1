@@ -1,5 +1,5 @@
 BeforeAll {
-    $TestDir = Join-Path -Path $PSScriptRoot -ChildPath PrivateKey
+    $script:TestDir = Join-Path -Path $PSScriptRoot -ChildPath PrivateKey
 }
 
 Describe 'PrivateKey' {
