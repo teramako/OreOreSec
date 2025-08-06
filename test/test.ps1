@@ -1,14 +1,24 @@
 <#
 .SYNOPSIS
 Test OreOreSec
+
+.PARAMETER FullName
+テストのフィルター
 #>
-param()
+param(
+    [Parameter()]
+    [string[]] $FullName
+)
 
 $ParnetDir = Join-Path -Path $PSScriptRoot -ChildPath .. -Resolve
 Import-Module (Join-Path -Path $ParnetDir -ChildPath OreOreSec.psd1)
 Import-Module -Name Pester
 
 $conf = New-PesterConfiguration
+if ($FullNames.Count -gt 0)
+{
+    $conf.Filter.FullName = $FullName
+}
 $conf.Run.Path = $PSScriptRoot
 # $conf.Debug.ReturnRawResultObject = $true
 # $conf.Debug.WriteDebugMessages = 
