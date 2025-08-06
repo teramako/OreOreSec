@@ -12,7 +12,7 @@
 RootModule = 'OreOreSec.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.1'
+ModuleVersion = '0.1.0'
 
 # Supported PSEditions
 CompatiblePSEditions = 'Core'
@@ -60,10 +60,10 @@ PowerShellVersion = '7.5.0'
 # ScriptsToProcess = @()
 
 # Type files (.ps1xml) to be loaded when importing this module
-# TypesToProcess = @()
+TypesToProcess = 'Asn1.Types.ps1xml'
 
 # Format files (.ps1xml) to be loaded when importing this module
-# FormatsToProcess = @()
+FormatsToProcess = 'Asn1.Formats.ps1xml'
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
 NestedModules = 'libs/net8.0/MT.dll'
@@ -73,7 +73,10 @@ FunctionsToExport = @(
     'New-ECDsaPrivateKey',
     'New-RSAPrivateKey',
     'New-DSAPrivateKey',
-    'Read-PEM'
+    'Read-PEM',
+    'Read-Asn1',
+    'ConvertTo-Asn1',
+    'Show-Asn1Tree'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -92,7 +95,12 @@ AliasesToExport = @()
 # ModuleList = @()
 
 # List of all files packaged with this module
-FileList = 'OreOreSec.psm1', 'PrivateKey.ps1', 'PEM.ps1'
+FileList = @(
+    'OreOreSec.psm1',
+    'PrivateKey.ps1',
+    'PEM.ps1',
+    'Asn1.ps1'
+)
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
