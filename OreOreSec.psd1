@@ -70,13 +70,14 @@ NestedModules = 'libs/net8.0/MT.dll'
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
-    'New-ECDsaPrivateKey',
-    'New-RSAPrivateKey',
-    'New-DSAPrivateKey',
-    'Read-PEM',
-    'Read-Asn1',
-    'ConvertTo-Asn1',
-    'Show-Asn1Tree'
+    'New-ECDsaPrivateKey'
+    , 'New-RSAPrivateKey'
+    , 'New-DSAPrivateKey'
+    , 'Read-PEM'
+    , 'Read-Asn1'
+    , 'ConvertTo-Asn1'
+    , 'Show-Asn1Tree'
+    , 'ConvertTo-PrivateKey'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -96,10 +97,11 @@ AliasesToExport = @()
 
 # List of all files packaged with this module
 FileList = @(
-    'OreOreSec.psm1',
-    'PrivateKey.ps1',
-    'PEM.ps1',
-    'Asn1.ps1'
+    'libs/net8.0/MT.dll'
+    , 'OreOreSec.psm1'
+    , 'PrivateKey.ps1'
+    , 'PEM.ps1'
+    , 'Asn1.ps1'
 )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
