@@ -1,6 +1,9 @@
 <#
 functions for Prvate Key
 #>
+using namespace MT.Asn1;
+using namespace MT.Sec;
+using namespace MT.PowerShell;
 
 function New-ECDsaPrivateKey
 {
@@ -170,4 +173,78 @@ function New-DSAPrivateKey
         }
     }
     Write-Output $key
+}
+
+function ConvertFrom-Pkcs8EncryptedPrivateKey
+{
+    [CmdletBinding()]
+    [OutputType([System.Security.Cryptography.AsymmetricAlgorithm])]
+    param(
+        [Parameter(ParameterSetName = "Data", Mandatory, Position = 0)]
+        [byte[]] $Data
+        ,
+        [Parameter(ParameterSetName = "ASN1", Mandatory, Position = 0)]
+        [Asn1Data] $Asn1Data
+        ,
+        [Parameter()]
+        [securestring] $Password
+        ,
+        [Parameter()]
+        [KeyAlgorithm] $Algorithm
+    )
+    $epkAsn = switch ($PSCmdlet.ParameterSetName)
+    {
+        "Data" {
+            [Asn1Serializer]::Deserialize($Data)[0]
+        }
+        "ASN1" {
+            $Asn1Data
+        }
+    }
+    if ($null -eq $Algorithm)
+    {
+        $Algorithm = [UI]::ChoicePrompt[KeyAlgorithm]($Host.UI, 'Choose Key Algorithm')
+    }
+    $PasswordIsPresent = $null -ne $Password
+    try
+    {
+        if (-not $PasswordIsPresent)
+        {
+            $Password = [UI]::PasswordPrompt($Host.UI,
+                                             'Passphrase',
+                                             'Encrypted Private Key',
+                                             'Passphrase is required for extracting private key');
+        }
+        [AsymmetricAlgorithm] $key = switch ($Algorithm)
+        {
+            'ECDsa' {
+                [ECDsa]::Create();
+            }
+            'RSA' {
+                [RSA]::Create();
+            }
+            'DSA' {
+                [DSA]::Create()
+            }
+            default {
+                throw [System.IO.InvalidDataException]::new("Invalie Algorithm name: '$Algorithm'");
+            }
+        }
+        [int] $bytesRead = $null
+        $key.ImportEncryptedPkcs8PrivateKey((ConvertFrom-SecureString -SecureString $Password -AsPlainText),
+                                            $epkAsn.RawData.ToArray(),
+                                            [ref] $bytesRead)
+        Write-Output $key
+    }
+    catch [CryptographicException]
+    {
+        throw
+    }
+    finally
+    {
+        if (-not $PasswordIsPresent)
+        {
+            $Password.Dispose()
+        }
+    }
 }
