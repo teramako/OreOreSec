@@ -113,10 +113,10 @@ PrivateData = @{
         # Tags = @()
 
         # A URL to the license for this module.
-        # LicenseUri = ''
+        LicenseUri = 'https://raw.githubusercontent.com/teramako/OreOreSec/refs/heads/main/LICENSE'
 
         # A URL to the main website for this project.
-        # ProjectUri = ''
+        ProjectUri = 'https://github.com/teramako/OreOreSec'
 
         # A URL to an icon representing this module.
         # IconUri = ''
