@@ -333,6 +333,9 @@ function ConvertTo-PrivateKey
     秘密鍵の種類。 (`RSA` | `ECDsa` | `DSA`)
     省略時、入力値がPEM形式で EncryptedPkcs8 の場合は、選択プロンプトが出ます。
     入力値がバイナリデータの場合にも選択プロンプトが出ます。
+
+    .PARAMETER Password
+    EncryptedPkcs8 形式から鍵の抽出に必要なパスワード
     #>
     [CmdletBinding()]
     [OutputType([System.Security.Cryptography.AsymmetricAlgorithm])]
@@ -348,6 +351,9 @@ function ConvertTo-PrivateKey
         ,
         [Parameter()]
         [KeyAlgorithm] $Algorithm
+        ,
+        [Parameter()]
+        [securestring] $Password
     )
     $pipelineInput = $input
     switch ($PSCmdlet.ParameterSetName)
@@ -384,6 +390,10 @@ function ConvertTo-PrivateKey
                         {
                             $params['Algorithm'] = "$Algorithm"
                         }
+                        if ($Password)
+                        {
+                            $params['Password'] = $Password
+                        }
                         ConvertFrom-Pkcs8EncryptedPrivateKey @params
                     }
                     default {
@@ -415,6 +425,10 @@ function ConvertTo-PrivateKey
                     if ($Algorithm)
                     {
                         $params['Algorithm'] = $Algorithm.ToString();
+                    }
+                    if ($Password)
+                    {
+                        $params['Password'] = $Password
                     }
 
                     ConvertFrom-Pkcs8EncryptedPrivateKey @params
