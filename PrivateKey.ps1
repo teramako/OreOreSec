@@ -248,3 +248,67 @@ function ConvertFrom-Pkcs8EncryptedPrivateKey
         }
     }
 }
+
+function ConvertFrom-Pkcs8PrivateKey
+{
+    [CmdletBinding()]
+    [OutputType([System.Security.Cryptography.AsymmetricAlgorithm])]
+    param(
+        [Parameter(ParameterSetName = "Data", Mandatory, Position = 0)]
+        [byte[]] $Data
+        ,
+        [Parameter(ParameterSetName = "ASN1", Mandatory, Position = 0)]
+        [MT.Asn1.Asn1Data] $Asn1Data
+    )
+    $pkAsn = switch ($PSCmdlet.ParameterSetName)
+    {
+        "Data" {
+            [Asn1Serializer]::Deserialize($Data)[0]
+        }
+        "ASN1" {
+            $Asn1Data
+        }
+    }
+    # Pkcs8 Private Key:
+    #   Constructed SequenceOf
+    #     Integer                00
+    #     Constructed SequenceOf
+    #       ObjectIdentifier     { 'ECC' | 'RSA' | 'DSA' }   <--- GET
+    #       ObjectIdentifier     Optional
+    #     OctetString            [...OctetString]
+    try
+    {
+        $pkAlgorithm = $pkAsn.Children[1].Children[0]
+    }
+    catch
+    {
+        throw [System.IO.InvalidDataException]::new("The data is not PKCS#8 Private Key format.");
+    }
+    if ($null -eq $pkAlgorithm -or $pkAlgorithm -isnot [OidData])
+    {
+        throw [System.IO.InvalidDataException]::new("The data is not PKCS#8 Private Key format.");
+    }
+    $privateKey = switch ($pkAlgorithm.Oid.Value)
+    {
+        "1.2.840.10045.2.1" # ECC
+        {
+            Write-Verbose "Load as Pkcs8 ECDsa PrivateKey"
+            New-ECDsaPrivateKey -Data $pkAsn.RawData.ToArray()
+        }
+        "1.2.840.113549.1.1.1" # RSA
+        {
+            Write-Verbose "Load as Pkcs8 RSA PrivateKey"
+            New-RSAPrivateKey -Data $pkAsn.RawData.ToArray()
+        }
+        "1.2.840.10040.4.1" # DSA
+        {
+            Write-Verbose "Load as Pkcs8 DSA PrivateKey"
+            New-DSAPrivateKey -Data $pkAsn.RawData.ToArray()
+        }
+        default
+        {
+            throw [System.NotSupportedException]::new("Key Algorithm is not supported: $switch)")
+        }
+    }
+    Write-Output $privateKey;
+}
