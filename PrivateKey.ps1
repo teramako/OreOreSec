@@ -350,115 +350,38 @@ function ConvertTo-PrivateKey
         [PrivateKeyType] $KeyType
         ,
         [Parameter()]
-        [KeyAlgorithm] $Algorithm
+        [KeyAlgorithm] $Algorithm = [KeyAlgorithm]::Unknown
         ,
         [Parameter()]
         [securestring] $Password
     )
     $pipelineInput = $input
-    switch ($PSCmdlet.ParameterSetName)
+    $pk = switch ($PSCmdlet.ParameterSetName)
     {
         'PEM' {
             if ($pipelineInput.Count -gt 0)
             {
                 $PEM = $pipelineInput -join "`n"
             }
-            foreach ($pemData in $PEM | Read-PEM | Where-Object Label -Like '*PRIVATE KEY')
-            {
-                Write-Verbose "PEM Data`n$pemData";
-                $bytes = $pemData.GetRawData();
-                $asn1Data = [Asn1Serializer]::Deserialize($bytes)[0]
-                $asn1Data | Write-Asn1Tree | Format-Table -HideTableHeaders -Wrap | Out-String -Width 80 | Write-Verbose
-                $key = switch ($pemData.Label)
-                {
-                    "RSA PRIVATE KEY" {
-                        Write-Verbose "Load as Pkcs1 RSA PrivateKey"
-                        New-RSAPrivateKey -Data $bytes -Pkcs1
-                    }
-                    "EC PRIVATE KEY" {
-                        Write-Verbose "Load as Pkcs1 ECDsa PrivateKey"
-                        New-ECDsaPrivateKey -Data $bytes -Pkcs1
-                    }
-                    "PRIVATE KEY" {
-                        Write-Verbose "Reading data labeled '$($pemData.Label)'"
-                        ConvertFrom-Pkcs8PrivateKey -Asn1Data $asn1Data
-                    }
-                    "ENCRYPTED PRIVATE KEY" {
-                        Write-Verbose "Reading data labeled '$($pemData.Label)'"
-                        $params = @{ Asn1Data = $asn1Data }
-                        if ($Algorithm)
-                        {
-                            $params['Algorithm'] = "$Algorithm"
-                        }
-                        if ($Password)
-                        {
-                            $params['Password'] = $Password
-                        }
-                        ConvertFrom-Pkcs8EncryptedPrivateKey @params
-                    }
-                    default {
-                        throw [System.NotSupportedException]::new("$($pemData.Label)) is not supported")
-                    }
-                }
-                Write-Output $key
-            }
+            [PrivateKey]::Decode($PEM)
         }
         'Binary' {
             if ($pipelineInput.Count -gt 0)
             {
                 $Data = [byte[]] $pipelineInput;
             }
-            $asn1Data = (ConvertTo-Asn1 -Data $Data)[0]
-            $asn1Data | Write-Asn1Tree | Format-Table -HideTableHeaders -Wrap | Out-String -Width 80 | Write-Verbose
-            if ($null -eq $asn1Data -or -not $asn1Data.Tag.IsConstructed)
-            {
-                return;
-            }
-            if ($null -eq $KeyType)
-            {
-                $KeyType = [UI]::ChoicePrompt[PrivateKeyType]($Host.UI, 'Data Type', 'Choose data type of the private key')
-            }
-            switch ($KeyType)
-            {
-                'EncryptedPkcs8' {
-                    $params = @{ Asn1Data = $asn1Data; }
-                    if ($Algorithm)
-                    {
-                        $params['Algorithm'] = $Algorithm.ToString();
-                    }
-                    if ($Password)
-                    {
-                        $params['Password'] = $Password
-                    }
-
-                    ConvertFrom-Pkcs8EncryptedPrivateKey @params
-                }
-                'Pkcs8' {
-                    ConvertFrom-Pkcs8PrivateKey -Asn1Data $asn1Data
-                }
-                default {
-                    if ($null -eq $Algorithm)
-                    {
-                        $Algorithm = [UI]::ChoicePrompt[KeyAlgorithm]($Host.UI, 'Choose Key Algorithm');
-                    }
-
-                    switch ($Algorithm)
-                    {
-                        'DSA'
-                        {
-                            throw [System.NotSupportedException]::new('Pkcs1 DSA Key is not supported');
-                        }
-                        'RSA'
-                        {
-                            New-RSAPrivateKey -Data $asn1Data.RawData.ToArray() -Pkcs1
-                        }
-                        'ECDsa'
-                        {
-                            New-ECDsaPrivateKey -Data $asn1Data.RawData.ToArray() -Pkcs1
-                        }
-                    }
-                }
-            }
+            [PrivateKey]::Decode($Data)
         }
     }
+    Write-Verbose ([Asn1Serializer]::EnumerateAsTree($pk.Data) | Out-String)
+    Write-Verbose ("Load as {0}" -f $pk.Type)
+    if ($pk.Algorithm -ne 'Unknown')
+    {
+        Write-Verbose ("Detected key algorithm: {0}" -f $pk.Algorithm)
+        if ($Algorithm -ne [KeyAlgorithm]::Unknown -and $Algorithm -ne $pk.Algorithm)
+        {
+            Write-Warning "Specified Algorithm is '$Algorithm', but detected is '$($pk.Algorithm)'. Use detected algorithm"
+        }
+    }
+    Write-Output $pk.GetPrivateKey($Host, $Password, $Algorithm)
 }
