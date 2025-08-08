@@ -10,7 +10,7 @@ function ConvertTo-Asn1
     .SYNOPSIS
     バイナリデータを ASN.1 オブジェクトへ変換する
 
-    .PARAMETER PEMs
+    .PARAMETER PEM
     PEM 形式の文字列を変換した `PemData` オブジェクト
 
     .PARAMETER Data
@@ -20,7 +20,7 @@ function ConvertTo-Asn1
     [OutputType([MT.Asn1.Asn1Data])]
     param(
         [Parameter(ParameterSetName = "PEM", Mandatory, ValueFromPipeline, Position = 0)]
-        [MT.Sec.PemData[]] $PEMs
+        [MT.Sec.PemData[]] $PEM
         ,
         [Parameter(ParameterSetName = "Binary", Mandatory, ValueFromPipeline, Position = 0)]
         [byte[]] $Data
@@ -35,9 +35,9 @@ function ConvertTo-Asn1
         "PEM" {
             if ($pipelineInput.Count -gt 0)
             {
-                $PEMs = [MT.Sec.PemData[]] $pipelineInput
+                $PEM = [MT.Sec.PemData[]] $pipelineInput
             }
-            foreach ($pemData in $PEMs)
+            foreach ($pemData in $PEM)
             {
                 Write-Verbose "Read from PEM data labeled: $($pemData.Label)";
                 Write-Output ([Asn1Serializer]::Deserialize($pemData.GetRawData(), $Type))
@@ -135,7 +135,7 @@ function Show-Asn1Tree
         {
             "PEM" {
                 Write-Verbose "Read PEM from pipeline"
-                ConvertTo-Asn1 -PEMs $pipelineInput
+                ConvertTo-Asn1 -PEM $pipelineInput
             }
             "Base64" {
                 Write-Verbose "Read Base64 from pipeline"
