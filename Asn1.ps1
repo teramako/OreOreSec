@@ -22,6 +22,9 @@ function ConvertTo-Asn1
         [Parameter(ParameterSetName = "PEM", Mandatory, ValueFromPipeline, Position = 0)]
         [MT.Sec.PemData[]] $PEM
         ,
+        [Parameter(ParameterSetName = "Text", Mandatory, ValueFromPipeline, Position = 0)]
+        [string] $PEMString
+        ,
         [Parameter(ParameterSetName = "Binary", Mandatory, ValueFromPipeline, Position = 0)]
         [byte[]] $Data
         ,
@@ -40,6 +43,17 @@ function ConvertTo-Asn1
             foreach ($pemData in $PEM)
             {
                 Write-Verbose "Read from PEM data labeled: $($pemData.Label)";
+                Write-Output ([Asn1Serializer]::Deserialize($pemData.GetRawData(), $Type))
+            }
+        }
+        "Text" {
+            if ($pipelineInput.Count -gt 0)
+            {
+                $PEMString = $pipelineInput -join "`n"
+            }
+            foreach ($pemData in [MT.Sec.PemData]::Parse($PEMString))
+            {
+                Write-Verbose "Read from PEM string labeled: $($pemData.Label)";
                 Write-Output ([Asn1Serializer]::Deserialize($pemData.GetRawData(), $Type))
             }
         }
