@@ -1,6 +1,8 @@
 <#
 Functions for Abstract Syntax Notation One (ASN.1)
 #>
+using namespace System.Formats.Asn1;
+using namespace MT.Asn1;
 
 function ConvertTo-Asn1
 {
@@ -24,7 +26,7 @@ function ConvertTo-Asn1
         [byte[]] $Data
         ,
         [Parameter()]
-        [System.Formats.Asn1.AsnEncodingRules] $Type = [System.Formats.Asn1.AsnEncodingRules]::DER
+        [AsnEncodingRules] $Type = [AsnEncodingRules]::DER
     )
 
     $pipelineInput = $input
@@ -38,7 +40,7 @@ function ConvertTo-Asn1
             foreach ($pemData in $PEMs)
             {
                 Write-Verbose "Read from PEM data labeled: $($pemData.Label)";
-                Write-Output ([MT.Asn1.Asn1Serializer]::Deserialize($pemData.GetRawData(), $Type))
+                Write-Output ([Asn1Serializer]::Deserialize($pemData.GetRawData(), $Type))
             }
         }
         "Binary" {
@@ -47,7 +49,7 @@ function ConvertTo-Asn1
                 $Data = [byte[]] $pipelineInput;
             }
             Write-Verbose "Read binary data: byte[$($Data.Length)]";
-            Write-Output ([MT.Asn1.Asn1Serializer]::Deserialize($Data, $Type))
+            Write-Output ([Asn1Serializer]::Deserialize($Data, $Type))
         }
     }
 }
@@ -150,10 +152,10 @@ function Show-Asn1Tree
         [switch] $NoIndent
         ,
         [Parameter()]
-        [System.Formats.Asn1.AsnEncodingRules] $RuleSet = 'DER'
+        [AsnEncodingRules] $RuleSet = 'DER'
         ,
         [Parameter(ParameterSetName = "ASN1", Mandatory, ValueFromPipeline)]
-        [MT.Asn1.Asn1Data] $Asn1
+        [Asn1Data] $Asn1
         ,
         [Parameter(ParameterSetName = "PEM", Mandatory, ValueFromPipeline)]
         [MT.Sec.PemData] $PEM

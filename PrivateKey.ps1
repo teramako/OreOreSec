@@ -1,6 +1,7 @@
 <#
 functions for Prvate Key
 #>
+using namespace System.Security.Cryptography;
 using namespace MT.Asn1;
 using namespace MT.Sec;
 using namespace MT.PowerShell;
