@@ -96,10 +96,6 @@ function Show-Asn1Tree
     <#
     .SYNOPSIS
     ASN.1 データの階層構造を出力
-    .PARAMETER RuleSet
-    `DER', `CER' 等のデータタイプ
-    .PARAMETER NoIndent
-    階層構造のインデントを出力しない
     .PARAMETER Asn1
     ASN.1 オブジェクト
     .PARAMETER PEM
@@ -108,14 +104,12 @@ function Show-Asn1Tree
     Base64エンコードされた文字列
     .PARAMETER Data
     バイナリデータ
+    .PARAMETER RuleSet
+    `DER', `CER' 等のデータタイプ
+    .PARAMETER NoIndent
+    階層構造のインデントを出力しない
     #>
     param(
-        [Parameter()]
-        [switch] $NoIndent
-        ,
-        [Parameter()]
-        [AsnEncodingRules] $RuleSet = 'DER'
-        ,
         [Parameter(ParameterSetName = "ASN1", Mandatory, ValueFromPipeline)]
         [Asn1Data] $Asn1
         ,
@@ -127,6 +121,14 @@ function Show-Asn1Tree
         ,
         [Parameter(ParameterSetName = "Binary", Mandatory, ValueFromPipeLine)]
         [byte[]] $Data
+        ,
+        [Parameter()]
+        [switch] $NoIndent
+        ,
+        [Parameter(ParameterSetName = "PEM")]
+        [Parameter(ParameterSetName = "Base64")]
+        [Parameter(ParameterSetName = "Binary")]
+        [AsnEncodingRules] $RuleSet = 'DER'
     )
     $pipelineInput = $input
     $asnData = if ($pipelineInput.Count -gt 0)
