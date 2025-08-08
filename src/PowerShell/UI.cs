@@ -33,12 +33,19 @@ public static class UI
         return labels[index];
     }
 
+    /// <summary>
+    /// <typeparamref name="TEnum"/> 値の選択プロンプトを出す。
+    /// 0 以下の値は選択対象から外れる。(0 は未定義を表したり、マイナス値は正規の値であることを想定)
+    /// </summary>
     public static TEnum ChoicePrompt<TEnum>(PSHostUserInterface ui,
                                             string caption = "",
                                             string message = "")
         where TEnum : struct, Enum
     {
-        var labels = Enum.GetNames<TEnum>();
+        var labels = Enum.GetValues<TEnum>()
+                         .Where(static val => val is > 0)
+                         .Select(static val => $"{val}")
+                         .ToArray();
         var result = ChoicePrompt(ui, labels, caption, message);
         return Enum.Parse<TEnum>(result);
     }
