@@ -91,44 +91,6 @@ function Read-Asn1
     }
 }
 
-function Write-Asn1Tree
-{
-    <#
-    .SYNOPSIS
-    Print out ASN.1 data recursively
-    #>
-    param(
-        [Parameter(Mandatory, ValueFromPipeline)]
-        [MT.Asn1.Asn1Data] $Data
-        ,
-        [Parameter()]
-        [switch] $NoIndent
-        ,
-        [Parameter(DontShow)]
-        [int] $Depth = 0
-    )
-    begin
-    {
-        $indent = if ($NoIndent) { "" } else { "  " * $Depth }
-    }
-    process
-    {
-        $result = [PSCustomObject]@{
-            Name = "{0}{1}" -f $indent, $Data.Tag
-            Value = $Data.Data;
-        }
-        Write-Output $result
-        if ($Data.Tag.IsConstructed)
-        {
-            $childDepth = $Depth + 1
-            foreach ($child in ([MT.Asn1.ConstructedData]$Data).Children)
-            {
-                Write-Asn1Tree -Data $child -NoIndent:$NoIndent -Depth $childDepth
-            }
-        }
-    }
-}
-
 function Show-Asn1Tree
 {
     <#
@@ -211,7 +173,5 @@ function Show-Asn1Tree
             }
         }
     }
-    $asnData | 
-        Write-Asn1Tree -NoIndent:$NoIndent |
-            Format-Table -HideTableHeaders -Wrap
+    $asnData | ForEach-Object { [Asn1Serializer]::EnumerateAsTree($_); }
 }
