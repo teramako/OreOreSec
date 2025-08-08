@@ -5,6 +5,10 @@ namespace MT.PowerShell;
 
 public static class UI
 {
+    /// <summary>
+    /// パスワード入力プロンプトを出す。
+    /// PowerShell の <c>Get-Credential</c> 等とは違い、ユーザー名値が不要。
+    /// </summary>
     public static SecureString PasswordPrompt(PSHostUserInterface ui,
                                               string prompt = "Password",
                                               string caption = "",
@@ -19,6 +23,9 @@ public static class UI
         return password;
     }
 
+    /// <summary>
+    /// 文字列のリストから選択プロンプトを出す。
+    /// </summary>
     public static string ChoicePrompt(PSHostUserInterface ui,
                                       string[] labels,
                                       string caption = "",
