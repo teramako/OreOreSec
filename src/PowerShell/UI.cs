@@ -49,9 +49,9 @@ public static class UI
                                             string message = "")
         where TEnum : struct, Enum
     {
-        var labels = Enum.GetValues<TEnum>()
-                         .Where(static val => val is > 0)
-                         .Select(static val => $"{val}")
+        var labels = Enum.GetValuesAsUnderlyingType<TEnum>().OfType<int>()
+                         .Where(static val => val > 0)
+                         .Select(static val => Enum.Parse<TEnum>($"{val}").ToString())
                          .ToArray();
         var result = ChoicePrompt(ui, labels, caption, message);
         return Enum.Parse<TEnum>(result);
