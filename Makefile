@@ -11,7 +11,7 @@ $(DLL): $(CSharpFiles)
 build: $(DLL) ## Build C# Projects
 
 .PHONY: test
-test: ## Run tests
+test: build ## Build and Run tests
 	@$(PWSH) -File test/test.ps1
 
 .PHONY: help
