@@ -96,66 +96,44 @@ Describe 'PrivateKey' {
 
     Context 'ConvertTo-PrivateKey <algorithm> <type>' -ForEach @(
         @{ algorithm = 'RSA';   expected = 'rsa.pkcs8.pem';   targets = @(
-            @{ type = 'Pkcs1';  fileSuffix = 'pkcs1.pem';  }
-          , @{ type = 'Pkcs8';  fileSuffix = 'pkcs8.pem';  }
-          , @{ type = 'EncryptedPkcs8'; fileSuffix = 'pkcs8.encrypted.pem'; }
+            @{ file = 'rsa.pkcs1.pem';  }
+          , @{ file = 'rsa.pkcs8.pem';  }
+          , @{ file = 'rsa.pkcs8.encrypted.pem'; }
         )}
       , @{ algorithm = 'ECDsa'; expected = 'ecdsa.pkcs8.pem';   targets = @(
-            @{ type = 'Pkcs1';  fileSuffix = 'pkcs1.pem';  }
-          , @{ type = 'Pkcs8';  fileSuffix = 'pkcs8.pem';  }
-          , @{ type = 'EncryptedPkcs8'; fileSuffix = 'pkcs8.encrypted.pem'; }
+            @{ file = 'ecdsa.pkcs1.pem';  }
+          , @{ file = 'ecdsa.pkcs8.pem';  }
+          , @{ file = 'ecdsa.pkcs8.encrypted.pem'; }
         )}
       , @{ algorithm = 'DSA';   expected = 'dsa.pkcs8.pem';   targets = @(
-          , @{ type = 'Pkcs8';  fileSuffix = 'pkcs8.pem';  }
-          , @{ type = 'EncryptedPkcs8'; fileSuffix = 'pkcs8.encrypted.pem'; }
+          , @{ file = 'dsa.pkcs8.pem';  }
+          , @{ file = 'dsa.pkcs8.encrypted.pem'; }
         )}
     ) {
         BeforeAll {
             $script:expectedPemData = (Get-Content -Raw -Path (Join-Path -Path $TestDir -ChildPath $expected)).Trim()
         }
-        It 'From PEM argument <type>' -ForEach $targets {
-            $pem = Read-PEM -Path (Join-Path -Path $TestDir -ChildPath ("{0}.{1}" -f $algorithm.ToLowerInvariant(), $fileSuffix))
-            $params = @{ PEM = $pem }
-            if ($type -eq 'EncryptedPkcs8')
-            {
-                $params['Algorithm'] = $algorithm
-                $params['Password'] = $Password
-            }
-            $key = ConvertTo-PrivateKey @params
+        It 'From PEM argument <file>' -ForEach $targets {
+            $pem = Read-PEM -Path (Join-Path -Path $TestDir -ChildPath $file)
+            $key = ConvertTo-PrivateKey -PEM $pem -Algorithm $algorithm -Password $Password
             $key.ExportPkcs8PrivateKeyPem() | Should -Be $expectedPemData
         }
 
-        It 'From PEM pipeline <type>' -ForEach $targets {
-            $pem = Read-PEM -Path (Join-Path -Path $TestDir -ChildPath ("{0}.{1}" -f $algorithm.ToLowerInvariant(), $fileSuffix))
-            $params = @{}
-            if ($type -eq 'EncryptedPkcs8')
-            {
-                $params['Algorithm'] = $algorithm
-                $params['Password'] = $Password
-            }
-            $key = $pem | ConvertTo-PrivateKey @params
+        It 'From PEM pipeline <file>' -ForEach $targets {
+            $pem = Read-PEM -Path (Join-Path -Path $TestDir -ChildPath $file)
+            $key = $pem | ConvertTo-PrivateKey -Algorithm $algorithm -Password $Password
             $key.ExportPkcs8PrivateKeyPem() | Should -Be $expectedPemData
         }
 
-        It 'From Binary argument <type>' -ForEach $targets {
-            $pem = Read-PEM -Path (Join-Path -Path $TestDir -ChildPath ("{0}.{1}" -f $algorithm.ToLowerInvariant(), $fileSuffix))
-            $params = @{ Data = $pem.GetRawData(); KeyType = $type; Algorithm = $algorithm; }
-            if ($type -eq 'EncryptedPkcs8')
-            {
-                $params['Password'] = $Password
-            }
-            $key = ConvertTo-PrivateKey @params
+        It 'From Binary argument <file>' -ForEach $targets {
+            $pem = Read-PEM -Path (Join-Path -Path $TestDir -ChildPath $file)
+            $key = ConvertTo-PrivateKey -Data $pem.GetRawData() -Algorithm $algorithm -Password $Password
             $key.ExportPkcs8PrivateKeyPem() | Should -Be $expectedPemData
         }
 
         It 'From Binary pipeline <type>' -ForEach $targets {
-            $pem = Read-PEM -Path (Join-Path -Path $TestDir -ChildPath ("{0}.{1}" -f $algorithm.ToLowerInvariant(), $fileSuffix))
-            $params = @{ KeyType = $type; Algorithm = $algorithm; }
-            if ($type -eq 'EncryptedPkcs8')
-            {
-                $params['Password'] = $Password
-            }
-            $key = $pem.GetRawData() | ConvertTo-PrivateKey @params
+            $pem = Read-PEM -Path (Join-Path -Path $TestDir -ChildPath $file)
+            $key = $pem.GetRawData() | ConvertTo-PrivateKey -Algorithm $algorithm -Password $Password
             $key.ExportPkcs8PrivateKeyPem() | Should -Be $expectedPemData
         }
     }

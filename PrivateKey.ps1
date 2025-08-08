@@ -209,9 +209,6 @@ function ConvertTo-PrivateKey
         [byte[]] $Data
         ,
         [Parameter()]
-        [PrivateKeyType] $KeyType
-        ,
-        [Parameter()]
         [KeyAlgorithm] $Algorithm = [KeyAlgorithm]::Unknown
         ,
         [Parameter()]
