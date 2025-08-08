@@ -58,4 +58,24 @@ public static class Asn1Serializer
         }
         return [.. results];
     }
+
+    public class Asn1TreeItem(Asn1Data asn1Data, int depth)
+    {
+        public string Name { get; } = $"{(depth > 0 ? new string(' ', depth * 2) : string.Empty)}{asn1Data.Tag}";
+        public string Value { get; } = asn1Data.Data;
+    };
+
+    public static IEnumerable<Asn1TreeItem> EnumerateAsTree(Asn1Data root, bool indent = true, int depth = 0)
+    {
+        var item = new Asn1TreeItem(root, indent ? depth : 0);
+        yield return item;
+        if (root is ConstructedData c)
+        {
+            var childDepth = depth + 1;
+            foreach (var child in c.Children.SelectMany(child => EnumerateAsTree(child, indent, childDepth)))
+            {
+                yield return child;
+            }
+        }
+    }
 }

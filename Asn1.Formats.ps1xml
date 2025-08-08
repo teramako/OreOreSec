@@ -29,5 +29,36 @@
         </TableRowEntries>
       </TableControl>
     </View>
+    <View>
+      <Name>Asn1Tree</Name>
+      <ViewSelectedBy>
+        <TypeName>MT.Asn1.Asn1Serializer+Asn1TreeItem</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <HideTableHeaders>true</HideTableHeaders>
+        <AutoSize>false</AutoSize>
+        <TableHeaders>
+          <TableColumnHeader>
+            <Width>36</Width>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Width>64</Width>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <Wrap>true</Wrap>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>Name</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Value</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
   </ViewDefinitions>
 </Configuration>
