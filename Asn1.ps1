@@ -10,7 +10,7 @@ function ConvertTo-Asn1
     .SYNOPSIS
     バイナリデータを ASN.1 オブジェクトへ変換する
 
-    .PARAMETER PEMs
+    .PARAMETER PEM
     PEM 形式の文字列を変換した `PemData` オブジェクト
 
     .PARAMETER Data
@@ -20,7 +20,10 @@ function ConvertTo-Asn1
     [OutputType([MT.Asn1.Asn1Data])]
     param(
         [Parameter(ParameterSetName = "PEM", Mandatory, ValueFromPipeline, Position = 0)]
-        [MT.Sec.PemData[]] $PEMs
+        [MT.Sec.PemData[]] $PEM
+        ,
+        [Parameter(ParameterSetName = "Text", Mandatory, ValueFromPipeline, Position = 0)]
+        [string] $PEMString
         ,
         [Parameter(ParameterSetName = "Binary", Mandatory, ValueFromPipeline, Position = 0)]
         [byte[]] $Data
@@ -35,11 +38,22 @@ function ConvertTo-Asn1
         "PEM" {
             if ($pipelineInput.Count -gt 0)
             {
-                $PEMs = [MT.Sec.PemData[]] $pipelineInput
+                $PEM = [MT.Sec.PemData[]] $pipelineInput
             }
-            foreach ($pemData in $PEMs)
+            foreach ($pemData in $PEM)
             {
                 Write-Verbose "Read from PEM data labeled: $($pemData.Label)";
+                Write-Output ([Asn1Serializer]::Deserialize($pemData.GetRawData(), $Type))
+            }
+        }
+        "Text" {
+            if ($pipelineInput.Count -gt 0)
+            {
+                $PEMString = $pipelineInput -join "`n"
+            }
+            foreach ($pemData in [MT.Sec.PemData]::Parse($PEMString))
+            {
+                Write-Verbose "Read from PEM string labeled: $($pemData.Label)";
                 Write-Output ([Asn1Serializer]::Deserialize($pemData.GetRawData(), $Type))
             }
         }
@@ -96,10 +110,6 @@ function Show-Asn1Tree
     <#
     .SYNOPSIS
     ASN.1 データの階層構造を出力
-    .PARAMETER RuleSet
-    `DER', `CER' 等のデータタイプ
-    .PARAMETER NoIndent
-    階層構造のインデントを出力しない
     .PARAMETER Asn1
     ASN.1 オブジェクト
     .PARAMETER PEM
@@ -108,14 +118,12 @@ function Show-Asn1Tree
     Base64エンコードされた文字列
     .PARAMETER Data
     バイナリデータ
+    .PARAMETER RuleSet
+    `DER', `CER' 等のデータタイプ
+    .PARAMETER NoIndent
+    階層構造のインデントを出力しない
     #>
     param(
-        [Parameter()]
-        [switch] $NoIndent
-        ,
-        [Parameter()]
-        [AsnEncodingRules] $RuleSet = 'DER'
-        ,
         [Parameter(ParameterSetName = "ASN1", Mandatory, ValueFromPipeline)]
         [Asn1Data] $Asn1
         ,
@@ -127,6 +135,14 @@ function Show-Asn1Tree
         ,
         [Parameter(ParameterSetName = "Binary", Mandatory, ValueFromPipeLine)]
         [byte[]] $Data
+        ,
+        [Parameter()]
+        [switch] $NoIndent
+        ,
+        [Parameter(ParameterSetName = "PEM")]
+        [Parameter(ParameterSetName = "Base64")]
+        [Parameter(ParameterSetName = "Binary")]
+        [AsnEncodingRules] $RuleSet = 'DER'
     )
     $pipelineInput = $input
     $asnData = if ($pipelineInput.Count -gt 0)
@@ -135,7 +151,7 @@ function Show-Asn1Tree
         {
             "PEM" {
                 Write-Verbose "Read PEM from pipeline"
-                ConvertTo-Asn1 -PEMs $pipelineInput
+                ConvertTo-Asn1 -PEM $pipelineInput
             }
             "Base64" {
                 Write-Verbose "Read Base64 from pipeline"
