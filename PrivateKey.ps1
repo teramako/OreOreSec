@@ -245,3 +245,45 @@ function ConvertTo-PrivateKey
     }
     Write-Output $pk.GetPrivateKey($Host, $Password, $Algorithm)
 }
+
+function Read-PrivateKey
+{
+    [CmdletBinding()]
+    [OutputType([System.Security.Cryptography.AsymmetricAlgorithm])]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline, Position = 0)]
+        [string] $Path
+        ,
+        [Parameter()]
+        [KeyAlgorithm] $Algorithm = [KeyAlgorithm]::Unknown
+        ,
+        [Parameter()]
+        [securestring] $Password
+    )
+    begin
+    {
+        $params = @{
+            Algorithm = $Algorithm
+        }
+        if ($null -ne $Password)
+        {
+            $params['Password'] = $Password
+        }
+    }
+    process
+    {
+        $file = Get-Item -Path $Path
+        $data = [System.IO.File]::ReadAllBytes($file);
+        $isBinary = $data[0] -eq 0x30; # ASN.1 Sequence TagClass
+
+        if ($isBinary)
+        {
+            ConvertTo-PrivateKey -Data $data @params
+        }
+        else
+        {
+            $text = [System.Text.Encoding]::UTF8.GetString($data)
+            ConvertTo-PrivateKey -PEM $text @params
+        }
+    }
+}

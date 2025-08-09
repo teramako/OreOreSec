@@ -137,4 +137,20 @@ Describe 'PrivateKey' {
             $key.ExportPkcs8PrivateKeyPem() | Should -Be $expectedPemData
         }
     }
+
+    Context 'Read-PrivateKey' {
+        It 'Read DER data: <file>' -ForEach @(
+            @{ file = 'rsa.pkcs8.der'; expectedAlgorithm = 'RSA' }
+        ) {
+            $key = Read-PrivateKey -Path (Join-Path -Path $TestDir -ChildPath $file)
+            $key.SignatureAlgorithm | Should -Be $expectedAlgorithm
+        }
+
+        It 'Read PEM text: <file>' -ForEach @(
+            @{ file = 'rsa.pkcs8.pem'; expectedAlgorithm = 'RSA' }
+        ) {
+            $key = Read-PrivateKey -Path (Join-Path -Path $TestDir -ChildPath $file)
+            $key.SignatureAlgorithm | Should -Be $expectedAlgorithm
+        }
+    }
 }
