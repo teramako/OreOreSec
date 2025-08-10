@@ -26,13 +26,7 @@ function New-ECDsaPrivateKey
     [OutputType([System.Security.Cryptography.ECDsa])]
     param(
         [Parameter(ParameterSetName = "New", Mandatory, Position = 0)]
-        [ArgumentCompleter({
-            param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
-            [System.Security.Cryptography.ECCurve+NamedCurves].
-                GetProperties().
-                Where({$_.Name.StartsWith($wordToComplete, [System.StringComparison]::OrdinalIgnoreCase)}).
-                ForEach({$_.Name});
-        })]
+        [ValidateSet([MT.PowerShell.StaticProperties[ECCurve+NamedCurves]])]
         [string] $CurveName
         ,
         [Parameter(ParameterSetName = "Params", Mandatory, Position = 0)]
